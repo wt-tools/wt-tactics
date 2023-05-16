@@ -46,6 +46,7 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 			select {
 			case data := <-gamelog.Messages:
 				if len(g.bl.rows) > 0 && g.bl.latestTime > data.At {
+					// Reset log on a new battle session.
 					g.bl.rows = nil
 				}
 				g.bl.latestTime = data.At
@@ -140,7 +141,7 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 													Spacing:   layout.SpaceEnd,
 												}.Layout(gtx,
 													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.Vehicle.Name).Layout),
-													layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.TargetPlayer.Clan, r.Damage.TargetPlayer.Name)).Layout),
+													layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.Player.Clan, r.Damage.Player.Name)).Layout),
 												)
 											},
 										),
