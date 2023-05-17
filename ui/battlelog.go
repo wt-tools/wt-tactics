@@ -152,13 +152,22 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 										// Target player
 										layout.Flexed(0.2,
 											func(gtx C) D {
+												if r.Damage.TargetVehicle.Name != "" {
+													return layout.Flex{
+														Alignment: layout.Middle,
+														Axis:      layout.Vertical,
+														Spacing:   layout.SpaceStart,
+													}.Layout(gtx,
+														layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.TargetVehicle.Name).Layout),
+														layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.TargetPlayer.Clan, r.Damage.TargetPlayer.Name)).Layout),
+													)
+												}
 												return layout.Flex{
 													Alignment: layout.Middle,
 													Axis:      layout.Vertical,
 													Spacing:   layout.SpaceStart,
 												}.Layout(gtx,
-													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.TargetVehicle.Name).Layout),
-													layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.TargetPlayer.Clan, r.Damage.TargetPlayer.Name)).Layout),
+													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.ActionRaw).Layout),
 												)
 											},
 										),
