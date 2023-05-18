@@ -167,7 +167,7 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 													Axis:      layout.Vertical,
 													Spacing:   layout.SpaceStart,
 												}.Layout(gtx,
-													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.ActionRaw).Layout),
+													layout.Rigid(material.Label(th, unit.Sp(26), r.Achievement.Name).Layout),
 												)
 											},
 										),
