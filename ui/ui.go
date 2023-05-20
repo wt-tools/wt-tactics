@@ -7,6 +7,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"github.com/grafov/kiwi"
+	"github.com/wt-tools/wt-tactics/config"
 )
 
 type (
@@ -19,10 +20,10 @@ type gui struct {
 	bl  *battleLog
 }
 
-func Init(_ context.Context, log *kiwi.Logger) *gui {
+func Init(_ context.Context, conf *config.Config, log *kiwi.Logger) *gui {
 	return &gui{
 		log: log,
-		bl:  newBattleLog(log),
+		bl:  newBattleLog(conf, log),
 	}
 }
 

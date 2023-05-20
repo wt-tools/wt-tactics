@@ -5,6 +5,8 @@ CMD?=wt-tactics
 FLAGS?=-v
 CLEANUP?=
 
+export GOPRIVATE=github.com/wt-tools
+
 # Requires GNU grep
 APP:=$(shell grep -Po '^module\s+\K.*' go.mod)
 
@@ -34,6 +36,7 @@ generate:
 	go generate $(FLAGS) ./...
 
 tidy:
+	go get -u github.com/wt-tools/wtscope@latest
 	go mod tidy
 
 clean:

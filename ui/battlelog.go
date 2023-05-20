@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"image/color"
 	"time"
 
 	"gioui.org/app"
@@ -15,6 +16,7 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
+	"github.com/wt-tools/wt-tactics/config"
 	"github.com/wt-tools/wtscope/action"
 	"github.com/wt-tools/wtscope/input/hudmsg"
 )
@@ -24,6 +26,7 @@ var headings []string
 type battleLog struct {
 	w          *app.Window
 	th         *material.Theme
+	cfg        *config.Config
 	log        *kiwi.Logger
 	grid       component.GridState
 	list       widget.List
@@ -31,10 +34,11 @@ type battleLog struct {
 	latestTime time.Duration
 }
 
-func newBattleLog(log *kiwi.Logger) *battleLog {
+func newBattleLog(cfg *config.Config, log *kiwi.Logger) *battleLog {
 	return &battleLog{
 		w:   app.NewWindow(app.Title("WT Scope: Battle Log")),
 		th:  material.NewTheme(gofont.Collection()),
+		cfg: cfg,
 		log: log,
 	}
 }
@@ -95,13 +99,13 @@ func (b *battleLog) listLayout(gtx C) D {
 			// text = fmtAction(b.rows[i])
 			act = row(b.rows[i])
 		}
-		return act.rowDisplay(gtx, b.th)
+		return act.rowDisplay(gtx, b.cfg.CurrentPlayer(), b.th)
 	})
 }
 
 type row action.GeneralAction
 
-func (r row) rowDisplay(gtx C, th *material.Theme) D {
+func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 	return layout.UniformInset(10).Layout(gtx,
 		func(gtx C) D {
 			return layout.Flex{
@@ -119,6 +123,11 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 				),
 				layout.Flexed(0.9,
 					func(gtx C) D {
+						playerInfo := material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.Player.Clan, r.Damage.Player.Name))
+						playerInfo.Color = color.NRGBA{0, 0, 0, 255}
+						if r.Damage.Player.Name == playerName {
+							playerInfo.Color = color.NRGBA{0, 255, 0, 255}
+						}
 						return layout.Flex{
 							Axis: layout.Vertical,
 						}.Layout(gtx,
@@ -141,7 +150,7 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 													Spacing:   layout.SpaceEnd,
 												}.Layout(gtx,
 													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.Vehicle.Name).Layout),
-													layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.Player.Clan, r.Damage.Player.Name)).Layout),
+													layout.Rigid(playerInfo.Layout),
 												)
 											},
 										),
@@ -152,7 +161,16 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 										// Target player
 										layout.Flexed(0.2,
 											func(gtx C) D {
-												if r.Damage.TargetVehicle.Name != "" {
+												switch {
+												case r.Achievement != nil && r.Achievement.Name != "":
+													return layout.Flex{
+														Alignment: layout.Middle,
+														Axis:      layout.Vertical,
+														Spacing:   layout.SpaceStart,
+													}.Layout(gtx,
+														layout.Rigid(material.Label(th, unit.Sp(26), r.Achievement.Name).Layout),
+													)
+												case r.Damage.TargetVehicle.Name != "":
 													return layout.Flex{
 														Alignment: layout.Middle,
 														Axis:      layout.Vertical,
@@ -162,13 +180,7 @@ func (r row) rowDisplay(gtx C, th *material.Theme) D {
 														layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.TargetPlayer.Clan, r.Damage.TargetPlayer.Name)).Layout),
 													)
 												}
-												return layout.Flex{
-													Alignment: layout.Middle,
-													Axis:      layout.Vertical,
-													Spacing:   layout.SpaceStart,
-												}.Layout(gtx,
-													layout.Rigid(material.Label(th, unit.Sp(26), r.Achievement.Name).Layout),
-												)
+												return layout.Flex{}.Layout(gtx)
 											},
 										),
 									)

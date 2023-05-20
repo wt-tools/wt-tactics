@@ -2,16 +2,16 @@ package config
 
 import "fmt"
 
-type local struct{}
+type Config struct{}
 
-func New() *local {
-	return &local{}
+func New() *Config {
+	return &Config{}
 }
 
-func (l *local) CurrentPlayer() string {
+func (l *Config) CurrentPlayer() string {
 	return "ZenAviator"
 }
 
-func (l *local) GamePoint(path string) string {
+func (l *Config) GamePoint(path string) string {
 	return fmt.Sprintf("http://localhost:8111/%s", path)
 }

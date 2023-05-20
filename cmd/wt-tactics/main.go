@@ -25,7 +25,7 @@ func main() {
 	defaultPolling := poll.New(poll.SetLogger(errch),
 		poll.SetLoopDelay(250*time.Millisecond), poll.SetProblemDelay(4*time.Second))
 	go defaultPolling.Do()
-	gui := ui.Init(ctx, l)
+	gui := ui.Init(ctx, conf, l)
 
 	{
 		battleSvc := hudmsg.New(conf, defaultPolling, dedup.New(), errch)
