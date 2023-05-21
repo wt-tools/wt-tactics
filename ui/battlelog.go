@@ -16,7 +16,6 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
-	"github.com/wt-tools/wtradar/config"
 	"github.com/wt-tools/wtscope/action"
 	"github.com/wt-tools/wtscope/input/hudmsg"
 )
@@ -26,7 +25,7 @@ var headings []string
 type battleLog struct {
 	w          *app.Window
 	th         *material.Theme
-	cfg        *config.Config
+	cfg        configurator
 	log        *kiwi.Logger
 	grid       component.GridState
 	list       widget.List
@@ -34,7 +33,7 @@ type battleLog struct {
 	latestTime time.Duration
 }
 
-func newBattleLog(cfg *config.Config, log *kiwi.Logger) *battleLog {
+func newBattleLog(cfg configurator, log *kiwi.Logger) *battleLog {
 	return &battleLog{
 		w:   app.NewWindow(app.Title("WT Scope: Battle Log")),
 		th:  material.NewTheme(gofont.Collection()),
@@ -99,7 +98,7 @@ func (b *battleLog) listLayout(gtx C) D {
 			// text = fmtAction(b.rows[i])
 			act = row(b.rows[i])
 		}
-		return act.rowDisplay(gtx, b.cfg.CurrentPlayer(), b.th)
+		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
 	})
 }
 

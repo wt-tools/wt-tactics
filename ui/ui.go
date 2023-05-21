@@ -7,7 +7,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"github.com/grafov/kiwi"
-	"github.com/wt-tools/wtradar/config"
+	"github.com/wt-tools/wtscope/input/hudmsg"
 )
 
 type (
@@ -20,7 +20,12 @@ type gui struct {
 	bl  *battleLog
 }
 
-func Init(_ context.Context, conf *config.Config, log *kiwi.Logger) *gui {
+type configurator interface {
+	hudmsg.Config
+	PlayerName() string
+}
+
+func Init(_ context.Context, conf configurator, log *kiwi.Logger) *gui {
 	return &gui{
 		log: log,
 		bl:  newBattleLog(conf, log),
