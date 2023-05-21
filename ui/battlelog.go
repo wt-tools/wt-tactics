@@ -16,7 +16,7 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
-	"github.com/wt-tools/wt-tactics/config"
+	"github.com/wt-tools/wtradar/config"
 	"github.com/wt-tools/wtscope/action"
 	"github.com/wt-tools/wtscope/input/hudmsg"
 )

@@ -13,5 +13,5 @@ func (l *Config) CurrentPlayer() string {
 }
 
 func (l *Config) GamePoint(path string) string {
-	return fmt.Sprintf("http://localhost:8111/%s", path)
+	return fmt.Sprintf("http://localhost:9222/%s", path)
 }

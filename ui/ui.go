@@ -7,7 +7,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"github.com/grafov/kiwi"
-	"github.com/wt-tools/wt-tactics/config"
+	"github.com/wt-tools/wtradar/config"
 )
 
 type (

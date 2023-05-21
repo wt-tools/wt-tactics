@@ -1,4 +1,4 @@
-module github.com/wt-tools/wt-tactics
+module github.com/wt-tools/wtradar
 
 go 1.20
 

@@ -1,4 +1,4 @@
-# WT Tactics
+# WT Radar
 
 *In development. This dev preview is totally not usable yet.*
 
