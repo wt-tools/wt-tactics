@@ -1,0 +1,8 @@
+# Copy it to ~/.config/wtscope/defaults.toml and adapt values below.
+
+[player]
+name = "YourPlayerName"
+squad = "YourSquadName"
+
+[game]
+url = "http://localhost:8111/"
