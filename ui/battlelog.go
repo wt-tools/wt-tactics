@@ -55,7 +55,8 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 					g.bl.rowsPlayer = nil
 				}
 				g.bl.latestTime = data.At
-				if data.Damage.Player.Name == g.bl.cfg.PlayerName() {
+				if data.Damage.Player.Name == g.bl.cfg.PlayerName() ||
+					data.Damage.TargetPlayer.Name == g.bl.cfg.PlayerName() {
 					g.bl.rowsPlayer = append(g.bl.rowsPlayer, data)
 				} else {
 					g.bl.rowsAll = append(g.bl.rowsAll, data)
@@ -79,20 +80,27 @@ func (b *battleLog) panel() error {
 		case system.DestroyEvent:
 			return e.Err
 		case system.FrameEvent:
-			if len(b.rowsAll)+len(b.rowsPlayer) == 0 {
-				continue
-			}
 			gtx := layout.NewContext(&ops, e)
 			layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Vertical,
 				Spacing:   layout.SpaceEvenly,
 			}.Layout(gtx,
-				layout.Flexed(0.25, b.myLogLayout),
-				layout.Flexed(0.75, b.battleLogLayout),
+				layout.Rigid(b.header("Team battle log")),
+				layout.Flexed(0.6, b.battleLogLayout),
+				layout.Rigid(b.header("Personal battle log")),
+				layout.Flexed(0.4, b.myLogLayout),
 			)
 			e.Frame(gtx.Ops)
 		}
+	}
+}
+
+func (b *battleLog) header(title string) func(C) D {
+	return func(gtx C) D {
+		return layout.UniformInset(10).Layout(gtx,
+			material.Label(b.th, unit.Sp(20), title).Layout,
+		)
 	}
 }
 
