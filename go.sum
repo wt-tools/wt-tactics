@@ -38,6 +38,8 @@ github.com/wt-tools/wtscope v0.0.0-20230521160908-5adc2fd7e629 h1:FOv434OaeI+Ykf
 github.com/wt-tools/wtscope v0.0.0-20230521160908-5adc2fd7e629/go.mod h1:ZWPv+s3SI1WnWaMrUk8LdhYzX2y+wM0mudhAVa8dOBA=
 github.com/wt-tools/wtscope v0.0.0-20230521163714-8620d19b63fe h1:2MvK6NQGm6RCi4/fpi2ZNIrxjnXOq3wkMYjmPJ3w5aI=
 github.com/wt-tools/wtscope v0.0.0-20230521163714-8620d19b63fe/go.mod h1:ZWPv+s3SI1WnWaMrUk8LdhYzX2y+wM0mudhAVa8dOBA=
+github.com/wt-tools/wtscope v0.0.0-20230521164842-01f2702b937d h1:xEVDoZH3bqkJaf+5ukA6nKqhctEd03ni/W5Pk6XCEbM=
+github.com/wt-tools/wtscope v0.0.0-20230521164842-01f2702b937d/go.mod h1:ZWPv+s3SI1WnWaMrUk8LdhYzX2y+wM0mudhAVa8dOBA=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=

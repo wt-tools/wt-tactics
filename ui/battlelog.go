@@ -23,14 +23,14 @@ import (
 var headings []string
 
 type battleLog struct {
-	w          *app.Window
-	th         *material.Theme
-	cfg        configurator
-	log        *kiwi.Logger
-	grid       component.GridState
-	list       widget.List
-	rows       []action.GeneralAction
-	latestTime time.Duration
+	w                   *app.Window
+	th                  *material.Theme
+	cfg                 configurator
+	log                 *kiwi.Logger
+	grid                component.GridState
+	listAll, listPlayer widget.List
+	rowsAll, rowsPlayer []action.GeneralAction
+	latestTime          time.Duration
 }
 
 func newBattleLog(cfg configurator, log *kiwi.Logger) *battleLog {
@@ -48,12 +48,18 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 		for {
 			select {
 			case data := <-gamelog.Messages:
-				if len(g.bl.rows) > 0 && g.bl.latestTime > data.At {
+				if (len(g.bl.rowsAll)+len(g.bl.rowsPlayer) > 0) && g.bl.latestTime > data.At {
 					// Reset log on a new battle session.
-					g.bl.rows = nil
+					l.Log("new battle has began")
+					g.bl.rowsAll = nil
+					g.bl.rowsPlayer = nil
 				}
 				g.bl.latestTime = data.At
-				g.bl.rows = append(g.bl.rows, data)
+				if data.Damage.Player.Name == g.bl.cfg.PlayerName() {
+					g.bl.rowsPlayer = append(g.bl.rowsPlayer, data)
+				} else {
+					g.bl.rowsAll = append(g.bl.rowsAll, data)
+				}
 				g.bl.w.Invalidate()
 				l.Log("battle log", data)
 			}
@@ -63,40 +69,68 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 
 func (b *battleLog) panel() error {
 	var ops op.Ops
-	b.list.Axis = layout.Vertical
-	b.list.ScrollToEnd = true
+	b.listPlayer.Axis = layout.Vertical
+	b.listPlayer.ScrollToEnd = true
+	b.listAll.Axis = layout.Vertical
+	b.listAll.ScrollToEnd = true
 	for {
 		e := <-b.w.Events()
 		switch e := e.(type) {
 		case system.DestroyEvent:
 			return e.Err
 		case system.FrameEvent:
-			if len(b.rows) == 0 {
+			if len(b.rowsAll)+len(b.rowsPlayer) == 0 {
 				continue
 			}
 			gtx := layout.NewContext(&ops, e)
-			b.listLayout(gtx)
+			layout.Flex{
+				Alignment: layout.Start,
+				Axis:      layout.Vertical,
+				Spacing:   layout.SpaceEvenly,
+			}.Layout(gtx,
+				layout.Flexed(0.25, b.myLogLayout),
+				layout.Flexed(0.75, b.battleLogLayout),
+			)
 			e.Frame(gtx.Ops)
 		}
 	}
 }
 
-func (b *battleLog) listLayout(gtx C) D {
-	return material.List(b.th, &b.list).Layout(gtx, len(b.rows), func(gtx layout.Context, i int) layout.Dimensions {
+func (b *battleLog) myLogLayout(gtx C) D {
+	return material.List(b.th, &b.listPlayer).Layout(gtx, len(b.rowsPlayer), func(gtx layout.Context, i int) layout.Dimensions {
 		var (
 			text string
 			act  row
 		)
 		switch {
-		case len(b.rows) == 0:
+		case len(b.rowsPlayer) == 0:
+			text = "no personal battle log yet"
+			return material.Label(b.th, unit.Sp(26), text).Layout(gtx)
+		case i > len(b.rowsPlayer): // TODO broken case, handle this in other way
+			act = row(b.rowsPlayer[len(b.rowsPlayer)-1])
+		default:
+			act = row(b.rowsPlayer[i])
+		}
+		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
+	})
+}
+
+func (b *battleLog) battleLogLayout(gtx C) D {
+	return material.List(b.th, &b.listAll).Layout(gtx, len(b.rowsAll), func(gtx layout.Context, i int) layout.Dimensions {
+		var (
+			text string
+			act  row
+		)
+		switch {
+		case len(b.rowsAll) == 0:
 			text = "no battle log yet"
 			return material.Label(b.th, unit.Sp(26), text).Layout(gtx)
-		case i > len(b.rows): // TODO broken case, handle this in other way
+		case i > len(b.rowsAll): // TODO broken case, handle this in other way
 			// text = fmtAction(b.rows[len(b.rows)-1])
-			act = row(b.rows[len(b.rows)-1])
+			act = row(b.rowsAll[len(b.rowsAll)-1])
 		default:
 			// text = fmtAction(b.rows[i])
-			act = row(b.rows[i])
+			act = row(b.rowsAll[i])
 		}
 		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
 	})
