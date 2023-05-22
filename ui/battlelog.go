@@ -30,18 +30,21 @@ type battleLog struct {
 	grid                component.GridState
 	listAll, listPlayer widget.List
 	rowsAll, rowsPlayer []action.GeneralAction
+	tropes              map[string]int
 	latestTime          time.Duration
 }
 
 func newBattleLog(cfg configurator, log *kiwi.Logger) *battleLog {
 	return &battleLog{
-		w:   app.NewWindow(app.Title("WT Scope: Battle Log")),
-		th:  material.NewTheme(gofont.Collection()),
-		cfg: cfg,
-		log: log,
+		w:      app.NewWindow(app.Title("WT Scope: Battle Log")),
+		th:     material.NewTheme(gofont.Collection()),
+		tropes: make(map[string]int),
+		cfg:    cfg,
+		log:    log,
 	}
 }
 
+// TODO move this logic to another package out of UI
 func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 	l := g.log.New()
 	go func() {
@@ -55,12 +58,18 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 					g.bl.rowsPlayer = nil
 				}
 				g.bl.latestTime = data.At
-				if data.Damage.Player.Name == g.bl.cfg.PlayerName() ||
-					data.Damage.TargetPlayer.Name == g.bl.cfg.PlayerName() {
+				switch {
+				case data.Damage.Player.Name == g.bl.cfg.PlayerName():
+					if data.Damage.TargetVehicle.Name != "" {
+						g.bl.tropes[data.Damage.TargetVehicle.Name]++
+					}
+					fallthrough
+				case data.Damage.TargetPlayer.Name == g.bl.cfg.PlayerName():
 					g.bl.rowsPlayer = append(g.bl.rowsPlayer, data)
-				} else {
+				default:
 					g.bl.rowsAll = append(g.bl.rowsAll, data)
 				}
+
 				g.bl.w.Invalidate()
 				l.Log("battle log", data)
 			}
@@ -88,18 +97,38 @@ func (b *battleLog) panel() error {
 			}.Layout(gtx,
 				layout.Rigid(b.header("Team battle log")),
 				layout.Flexed(0.6, b.battleLogLayout),
+				layout.Rigid(b.header("Trophies")),
+				layout.Flexed(0.1, b.myTrophies),
 				layout.Rigid(b.header("Personal battle log")),
-				layout.Flexed(0.4, b.myLogLayout),
+				layout.Flexed(0.3, b.myLogLayout),
 			)
 			e.Frame(gtx.Ops)
 		}
 	}
 }
 
+func (b *battleLog) myTrophies(gtx C) D {
+	var tropes []layout.FlexChild
+	for name, times := range b.tropes {
+		val := name
+		if times > 0 {
+			val = fmt.Sprintf("%s x %d", val, times)
+		}
+		l := material.Label(b.th, unit.Sp(26), val)
+		l.Color = color.NRGBA{192, 255, 0, 255}
+		tropes = append(tropes, layout.Rigid(func(gtx C) D { return layout.UniformInset(10).Layout(gtx, l.Layout) }))
+	}
+	return layout.Flex{
+		Alignment: layout.Start,
+		Axis:      layout.Horizontal,
+		Spacing:   layout.SpaceEvenly,
+	}.Layout(gtx, tropes...)
+}
+
 func (b *battleLog) header(title string) func(C) D {
 	return func(gtx C) D {
 		return layout.UniformInset(10).Layout(gtx,
-			material.Label(b.th, unit.Sp(20), title).Layout,
+			material.Label(b.th, unit.Sp(28), title).Layout,
 		)
 	}
 }
