@@ -56,6 +56,7 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 					l.Log("new battle has began")
 					g.bl.rowsAll = nil
 					g.bl.rowsPlayer = nil
+					g.bl.tropes = make(map[string]int)
 				}
 				g.bl.latestTime = data.At
 				switch {
@@ -111,7 +112,7 @@ func (b *battleLog) myTrophies(gtx C) D {
 	var tropes []layout.FlexChild
 	for name, times := range b.tropes {
 		val := name
-		if times > 0 {
+		if times > 1 {
 			val = fmt.Sprintf("%s x %d", val, times)
 		}
 		l := material.Label(b.th, unit.Sp(26), val)
