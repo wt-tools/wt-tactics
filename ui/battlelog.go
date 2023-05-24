@@ -16,7 +16,7 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
-	"github.com/wt-tools/wtscope/action"
+	"github.com/wt-tools/wtscope/events"
 	"github.com/wt-tools/wtscope/input/hudmsg"
 )
 
@@ -29,7 +29,7 @@ type battleLog struct {
 	log                 *kiwi.Logger
 	grid                component.GridState
 	listAll, listPlayer widget.List
-	rowsAll, rowsPlayer []action.GeneralAction
+	rowsAll, rowsPlayer []events.Event
 	tropes              map[string]int
 	latestTime          time.Duration
 }
@@ -60,12 +60,12 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 				}
 				g.bl.latestTime = data.At
 				switch {
-				case data.Damage.Player.Name == g.bl.cfg.PlayerName():
-					if data.Damage.TargetVehicle.Name != "" {
-						g.bl.tropes[data.Damage.TargetVehicle.Name]++
+				case data.Player.Name == g.bl.cfg.PlayerName():
+					if data.TargetVehicle.Name != "" {
+						g.bl.tropes[data.TargetVehicle.Name]++
 					}
 					fallthrough
-				case data.Damage.TargetPlayer.Name == g.bl.cfg.PlayerName():
+				case data.TargetPlayer.Name == g.bl.cfg.PlayerName():
 					g.bl.rowsPlayer = append(g.bl.rowsPlayer, data)
 				default:
 					g.bl.rowsAll = append(g.bl.rowsAll, data)
@@ -174,7 +174,7 @@ func (b *battleLog) battleLogLayout(gtx C) D {
 	})
 }
 
-type row action.GeneralAction
+type row events.Event
 
 func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 	return layout.UniformInset(10).Layout(gtx,
@@ -194,9 +194,9 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				),
 				layout.Flexed(0.9,
 					func(gtx C) D {
-						playerInfo := material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.Player.Clan, r.Damage.Player.Name))
+						playerInfo := material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Player.Squad, r.Player.Name))
 						playerInfo.Color = color.NRGBA{0, 0, 0, 255}
-						if r.Damage.Player.Name == playerName {
+						if r.Player.Name == playerName {
 							playerInfo.Color = color.NRGBA{0, 255, 0, 255}
 						}
 						return layout.Flex{
@@ -220,7 +220,7 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 													Axis:      layout.Vertical,
 													Spacing:   layout.SpaceEnd,
 												}.Layout(gtx,
-													layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.Vehicle.Name).Layout),
+													layout.Rigid(material.Label(th, unit.Sp(26), r.Vehicle.Name).Layout),
 													layout.Rigid(playerInfo.Layout),
 												)
 											},
@@ -228,7 +228,7 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 										// Action
 										//		layout.Inset{0, 0, 0, 0}.Layout(gtx,
 										layout.Flexed(0.5,
-											material.Label(th, unit.Sp(28), r.Damage.ActionRaw).Layout),
+											material.Label(th, unit.Sp(28), r.ActionText).Layout),
 										// Target player
 										layout.Flexed(0.2,
 											func(gtx C) D {
@@ -241,14 +241,14 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 													}.Layout(gtx,
 														layout.Rigid(material.Label(th, unit.Sp(26), r.Achievement.Name).Layout),
 													)
-												case r.Damage.TargetVehicle.Name != "":
+												case r.TargetVehicle.Name != "":
 													return layout.Flex{
 														Alignment: layout.Middle,
 														Axis:      layout.Vertical,
 														Spacing:   layout.SpaceStart,
 													}.Layout(gtx,
-														layout.Rigid(material.Label(th, unit.Sp(26), r.Damage.TargetVehicle.Name).Layout),
-														layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Damage.TargetPlayer.Clan, r.Damage.TargetPlayer.Name)).Layout),
+														layout.Rigid(material.Label(th, unit.Sp(26), r.TargetVehicle.Name).Layout),
+														layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.TargetPlayer.Squad, r.TargetPlayer.Name)).Layout),
 													)
 												}
 												return layout.Flex{}.Layout(gtx)
@@ -260,6 +260,6 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 		})
 }
 
-func fmtAction(a action.GeneralAction) string {
-	return fmt.Sprintf("%16s  %s", a.At, a.Origin)
+func fmtRawEvent(e events.Event) string {
+	return fmt.Sprintf("%16s  %s", e.At, e.Origin)
 }
