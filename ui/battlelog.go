@@ -16,6 +16,7 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
+	"github.com/wt-tools/wtscope/action"
 	"github.com/wt-tools/wtscope/events"
 	"github.com/wt-tools/wtscope/input/hudmsg"
 )
@@ -61,7 +62,8 @@ func (g *gui) UpdateBattleLog(ctx context.Context, gamelog *hudmsg.Service) {
 				g.bl.latestTime = data.At
 				switch {
 				case data.Player.Name == g.bl.cfg.PlayerName():
-					if data.TargetVehicle.Name != "" {
+					if (data.Action == action.Destroyed ||
+						data.Action == action.ShotDown) && data.TargetVehicle.Name != "" {
 						g.bl.tropes[data.TargetVehicle.Name]++
 					}
 					fallthrough
