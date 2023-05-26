@@ -118,7 +118,7 @@ func (b *battleLog) myTrophies(gtx C) D {
 			val = fmt.Sprintf("%s x %d", val, times)
 		}
 		l := material.Label(b.th, unit.Sp(26), val)
-		l.Color = color.NRGBA{192, 255, 0, 255}
+		l.Color = color.NRGBA{192, 192, 0, 255} // yellow
 		tropes = append(tropes, layout.Rigid(func(gtx C) D { return layout.UniformInset(10).Layout(gtx, l.Layout) }))
 	}
 	return layout.Flex{
@@ -197,9 +197,9 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				layout.Flexed(0.9,
 					func(gtx C) D {
 						playerInfo := material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Player.Squad, r.Player.Name))
-						playerInfo.Color = color.NRGBA{0, 0, 0, 255}
+						playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
 						if r.Player.Name == playerName {
-							playerInfo.Color = color.NRGBA{0, 255, 0, 255}
+							playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
 						}
 						return layout.Flex{
 							Axis: layout.Vertical,
