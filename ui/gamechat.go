@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"image/color"
+	"strings"
 	"time"
 
 	"gioui.org/app"
@@ -116,6 +117,7 @@ func (b *gameChat) chatLayout(gtx C) D {
 type chatRow gamechat.Message
 
 func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
+	const offset = 5
 	return layout.UniformInset(10).Layout(gtx,
 		func(gtx C) D {
 			return layout.Flex{
@@ -126,24 +128,29 @@ func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				// Timestamp
 				layout.Rigid(
 					func(gtx C) D {
-						return layout.UniformInset(10).Layout(gtx,
+						return layout.UniformInset(offset).Layout(gtx,
 							material.Label(th, unit.Sp(14), r.At.String()).Layout,
 						)
 					},
 				),
-				layout.Flexed(0.2,
+				layout.Flexed(0.1,
 					func(gtx C) D {
-						playerInfo := material.Label(th, unit.Sp(20), r.Sender)
+						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(18), strings.ToUpper(r.Mode)).Layout)
+					},
+				),
+				layout.Flexed(0.15,
+					func(gtx C) D {
+						playerInfo := material.Label(th, unit.Sp(18), r.Sender)
 						playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
 						if r.Sender == playerName {
 							playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
 						}
-						return layout.UniformInset(10).Layout(gtx, playerInfo.Layout)
+						return layout.UniformInset(offset).Layout(gtx, playerInfo.Layout)
 					},
 				),
-				layout.Flexed(0.8,
+				layout.Flexed(0.75,
 					func(gtx C) D {
-						return layout.UniformInset(10).Layout(gtx, material.Label(th, unit.Sp(20), r.Msg).Layout)
+						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(18), r.Msg).Layout)
 					},
 				),
 			)
