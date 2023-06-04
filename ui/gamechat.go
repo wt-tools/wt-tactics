@@ -14,7 +14,6 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
 	"github.com/wt-tools/wtscope/input/gamechat"
 )
@@ -24,7 +23,6 @@ type gameChat struct {
 	th         *material.Theme
 	cfg        configurator
 	log        *kiwi.Logger
-	grid       component.GridState
 	list       widget.List
 	rows       []gamechat.Message
 	tropes     map[string]int

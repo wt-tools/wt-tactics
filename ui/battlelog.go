@@ -14,7 +14,6 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"gioui.org/x/component"
 	"github.com/grafov/kiwi"
 	"github.com/wt-tools/wtscope/action"
 	"github.com/wt-tools/wtscope/events"
@@ -28,7 +27,6 @@ type battleLog struct {
 	th                  *material.Theme
 	cfg                 configurator
 	log                 *kiwi.Logger
-	grid                component.GridState
 	listAll, listPlayer widget.List
 	rowsAll, rowsPlayer []events.Event
 	tropes              map[string]int
