@@ -117,7 +117,7 @@ func (b *gameChat) chatLayout(gtx C) D {
 type chatRow gamechat.Message
 
 func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
-	const offset = 5
+	const offset = 3
 	return layout.UniformInset(10).Layout(gtx,
 		func(gtx C) D {
 			return layout.Flex{
