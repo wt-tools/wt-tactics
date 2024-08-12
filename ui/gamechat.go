@@ -9,6 +9,8 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -69,6 +71,7 @@ func (b *gameChat) panel() error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
+			paint.FillShape(gtx.Ops, bgColor, clip.Rect{Max: gtx.Constraints.Max}.Op())
 			layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Vertical,
@@ -107,50 +110,61 @@ func (b *gameChat) chatLayout(gtx C) D {
 			// text = fmtAction(b.rows[i])
 			act = chatRow(b.rows[i])
 		}
-		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
+		return act.rowDisplay(gtx, i, b.cfg.PlayerName(), b.th)
 	})
 }
 
 type chatRow gamechat.Message
 
-func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
+func (r chatRow) rowDisplay(gtx C, num int, playerName string, th *material.Theme) D {
 	const offset = 3
-	return layout.UniformInset(10).Layout(gtx,
-		func(gtx C) D {
-			return layout.Flex{
-				Alignment: layout.Start,
-				Axis:      layout.Horizontal,
-				Spacing:   layout.SpaceEvenly,
-			}.Layout(gtx,
-				// Timestamp
-				layout.Rigid(
-					func(gtx C) D {
-						return layout.UniformInset(offset).Layout(gtx,
-							material.Label(th, unit.Sp(12), r.At.String()).Layout,
-						)
-					},
-				),
-				layout.Flexed(0.1,
-					func(gtx C) D {
-						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), strings.ToUpper(r.Mode)).Layout)
-					},
-				),
-				layout.Flexed(0.15,
-					func(gtx C) D {
-						playerInfo := material.Label(th, unit.Sp(14), r.Sender)
-						playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
-						if r.Sender == playerName {
-							playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
-						}
-						return layout.UniformInset(offset).Layout(gtx, playerInfo.Layout)
-					},
-				),
-				layout.Flexed(0.75,
-					func(gtx C) D {
-						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), r.Msg).Layout)
-					},
-				),
-			)
-		},
-	)
+	border := widget.Border{
+		Color: thinLineColor,
+		Width: unit.Dp(1),
+	}
+	rowTableColor := evenRowColor
+	if num%2 == 0 {
+		rowTableColor = oddRowColor
+	}
+	return border.Layout(gtx, func(gtx C) D {
+		return layout.UniformInset(1).Layout(gtx,
+			func(gtx C) D {
+				paint.FillShape(gtx.Ops, rowTableColor, clip.Rect{Max: gtx.Constraints.Max}.Op())
+				return layout.Flex{
+					Alignment: layout.Start,
+					Axis:      layout.Horizontal,
+					Spacing:   layout.SpaceEvenly,
+				}.Layout(gtx,
+					// Timestamp
+					layout.Rigid(
+						func(gtx C) D {
+							return layout.UniformInset(offset).Layout(gtx,
+								material.Label(th, unit.Sp(12), r.At.String()).Layout,
+							)
+						},
+					),
+					layout.Flexed(0.1,
+						func(gtx C) D {
+							return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), strings.ToUpper(r.Mode)).Layout)
+						},
+					),
+					layout.Flexed(0.15,
+						func(gtx C) D {
+							playerInfo := material.Label(th, unit.Sp(14), r.Sender)
+							playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
+							if r.Sender == playerName {
+								playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
+							}
+							return layout.UniformInset(offset).Layout(gtx, playerInfo.Layout)
+						},
+					),
+					layout.Flexed(0.75,
+						func(gtx C) D {
+							return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), r.Msg).Layout)
+						},
+					),
+				)
+			},
+		)
+	})
 }

@@ -9,6 +9,8 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -90,6 +92,7 @@ func (b *battleLog) panel() error {
 			return e.Err
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
+			paint.FillShape(gtx.Ops, bgColor, clip.Rect{Max: gtx.Constraints.Max}.Op())
 			layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Vertical,
@@ -148,7 +151,7 @@ func (b *battleLog) myLogLayout(gtx C) D {
 		default:
 			act = row(b.rowsPlayer[i])
 		}
-		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
+		return act.rowDisplay(gtx, i, b.cfg.PlayerName(), b.th)
 	})
 }
 
@@ -169,15 +172,24 @@ func (b *battleLog) battleLogLayout(gtx C) D {
 			// text = fmtAction(b.rows[i])
 			act = row(b.rowsAll[i])
 		}
-		return act.rowDisplay(gtx, b.cfg.PlayerName(), b.th)
+		return act.rowDisplay(gtx, i, b.cfg.PlayerName(), b.th)
 	})
 }
 
 type row events.Event
 
-func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
-	return layout.UniformInset(10).Layout(gtx,
-		func(gtx C) D {
+func (r row) rowDisplay(gtx C, num int, playerName string, th *material.Theme) D {
+	border := widget.Border{
+		Color: thinLineColor,
+		Width: unit.Dp(1),
+	}
+	rowTableColor := evenRowColor
+	if num%2 == 0 {
+		rowTableColor = oddRowColor
+	}
+	return border.Layout(gtx, func(gtx C) D {
+		return layout.UniformInset(1).Layout(gtx, func(gtx C) D {
+			paint.FillShape(gtx.Ops, rowTableColor, clip.Rect{Max: gtx.Constraints.Max}.Op())
 			return layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Horizontal,
@@ -257,6 +269,7 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 								}))
 					}))
 		})
+	})
 }
 
 func fmtRawEvent(e events.Event) string {
