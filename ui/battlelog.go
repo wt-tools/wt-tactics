@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"gioui.org/app"
-	"gioui.org/font/gofont"
-	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/unit"
@@ -34,9 +32,11 @@ type battleLog struct {
 }
 
 func newBattleLog(cfg configurator, log *kiwi.Logger) *battleLog {
+	var w app.Window
+	w.Option(app.Title("WT Scope: Battle Log"))
 	return &battleLog{
-		w:      app.NewWindow(app.Title("WT Scope: Battle Log")),
-		th:     material.NewTheme(gofont.Collection()),
+		w:      &w,
+		th:     material.NewTheme(),
 		tropes: make(map[string]int),
 		cfg:    cfg,
 		log:    log,
@@ -85,12 +85,11 @@ func (b *battleLog) panel() error {
 	b.listAll.Axis = layout.Vertical
 	b.listAll.ScrollToEnd = true
 	for {
-		e := <-b.w.Events()
-		switch e := e.(type) {
-		case system.DestroyEvent:
+		switch e := b.w.Event().(type) {
+		case app.DestroyEvent:
 			return e.Err
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
+		case app.FrameEvent:
+			gtx := app.NewContext(&ops, e)
 			layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Vertical,
@@ -115,7 +114,7 @@ func (b *battleLog) myTrophies(gtx C) D {
 		if times > 1 {
 			val = fmt.Sprintf("%s x %d", val, times)
 		}
-		l := material.Label(b.th, unit.Sp(26), val)
+		l := material.Label(b.th, unit.Sp(20), val)
 		l.Color = color.NRGBA{192, 192, 0, 255} // yellow
 		tropes = append(tropes, layout.Rigid(func(gtx C) D { return layout.UniformInset(10).Layout(gtx, l.Layout) }))
 	}
@@ -129,7 +128,7 @@ func (b *battleLog) myTrophies(gtx C) D {
 func (b *battleLog) header(title string) func(C) D {
 	return func(gtx C) D {
 		return layout.UniformInset(10).Layout(gtx,
-			material.Label(b.th, unit.Sp(28), title).Layout,
+			material.Label(b.th, unit.Sp(20), title).Layout,
 		)
 	}
 }
@@ -143,7 +142,7 @@ func (b *battleLog) myLogLayout(gtx C) D {
 		switch {
 		case len(b.rowsPlayer) == 0:
 			text = "no personal battle log yet"
-			return material.Label(b.th, unit.Sp(26), text).Layout(gtx)
+			return material.Label(b.th, unit.Sp(24), text).Layout(gtx)
 		case i > len(b.rowsPlayer): // TODO broken case, handle this in other way
 			act = row(b.rowsPlayer[len(b.rowsPlayer)-1])
 		default:
@@ -162,7 +161,7 @@ func (b *battleLog) battleLogLayout(gtx C) D {
 		switch {
 		case len(b.rowsAll) == 0:
 			text = "no battle log yet"
-			return material.Label(b.th, unit.Sp(26), text).Layout(gtx)
+			return material.Label(b.th, unit.Sp(20), text).Layout(gtx)
 		case i > len(b.rowsAll): // TODO broken case, handle this in other way
 			// text = fmtAction(b.rows[len(b.rows)-1])
 			act = row(b.rowsAll[len(b.rowsAll)-1])
@@ -188,13 +187,13 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				layout.Rigid(
 					func(gtx C) D {
 						return layout.UniformInset(10).Layout(gtx,
-							material.Label(th, unit.Sp(14), r.At.String()).Layout,
+							material.Label(th, unit.Sp(12), r.At.String()).Layout,
 						)
 					},
 				),
 				layout.Flexed(0.9,
 					func(gtx C) D {
-						playerInfo := material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.Player.Squad, r.Player.Name))
+						playerInfo := material.Label(th, unit.Sp(16), fmt.Sprintf("%s %s", r.Player.Squad, r.Player.Name))
 						playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
 						if r.Player.Name == playerName {
 							playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
@@ -203,7 +202,7 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 							Axis: layout.Vertical,
 						}.Layout(gtx,
 							// Raw log row
-							layout.Rigid(material.Label(th, unit.Sp(14), r.Origin).Layout),
+							layout.Rigid(material.Label(th, unit.Sp(12), r.Origin).Layout),
 							// Player - action - player info
 							layout.Rigid(
 								func(gtx C) D {
@@ -228,7 +227,7 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 										// Action
 										//		layout.Inset{0, 0, 0, 0}.Layout(gtx,
 										layout.Flexed(0.5,
-											material.Label(th, unit.Sp(28), r.ActionText).Layout),
+											material.Label(th, unit.Sp(20), r.ActionText).Layout),
 										// Target player
 										layout.Flexed(0.2,
 											func(gtx C) D {
@@ -247,8 +246,8 @@ func (r row) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 														Axis:      layout.Vertical,
 														Spacing:   layout.SpaceStart,
 													}.Layout(gtx,
-														layout.Rigid(material.Label(th, unit.Sp(26), r.TargetVehicle.Name).Layout),
-														layout.Rigid(material.Label(th, unit.Sp(20), fmt.Sprintf("%s %s", r.TargetPlayer.Squad, r.TargetPlayer.Name)).Layout),
+														layout.Rigid(material.Label(th, unit.Sp(20), r.TargetVehicle.Name).Layout),
+														layout.Rigid(material.Label(th, unit.Sp(16), fmt.Sprintf("%s %s", r.TargetPlayer.Squad, r.TargetPlayer.Name)).Layout),
 													)
 												}
 												return layout.Flex{}.Layout(gtx)

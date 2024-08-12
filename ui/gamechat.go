@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"gioui.org/app"
-	"gioui.org/font/gofont"
-	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/unit"
@@ -30,9 +28,11 @@ type gameChat struct {
 }
 
 func newGameChat(cfg configurator, log *kiwi.Logger) *gameChat {
+	var w app.Window
+	w.Option(app.Title("WT Scope: Game Chat"))
 	return &gameChat{
-		w:      app.NewWindow(app.Title("WT Scope: Game Chat")),
-		th:     material.NewTheme(gofont.Collection()),
+		w:      &w,
+		th:     material.NewTheme(),
 		tropes: make(map[string]int),
 		cfg:    cfg,
 		log:    log,
@@ -64,12 +64,11 @@ func (b *gameChat) panel() error {
 	b.list.Axis = layout.Vertical
 	b.list.ScrollToEnd = true
 	for {
-		e := <-b.w.Events()
-		switch e := e.(type) {
-		case system.DestroyEvent:
+		switch e := b.w.Event().(type) {
+		case app.DestroyEvent:
 			return e.Err
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
+		case app.FrameEvent:
+			gtx := app.NewContext(&ops, e)
 			layout.Flex{
 				Alignment: layout.Start,
 				Axis:      layout.Vertical,
@@ -86,7 +85,7 @@ func (b *gameChat) panel() error {
 func (b *gameChat) header(title string) func(C) D {
 	return func(gtx C) D {
 		return layout.UniformInset(10).Layout(gtx,
-			material.Label(b.th, unit.Sp(28), title).Layout,
+			material.Label(b.th, unit.Sp(20), title).Layout,
 		)
 	}
 }
@@ -100,7 +99,7 @@ func (b *gameChat) chatLayout(gtx C) D {
 		switch {
 		case len(b.rows) == 0:
 			text = "no battle log yet"
-			return material.Label(b.th, unit.Sp(26), text).Layout(gtx)
+			return material.Label(b.th, unit.Sp(16), text).Layout(gtx)
 		case i > len(b.rows): // TODO broken case, handle this in other way
 			// text = fmtAction(b.rows[len(b.rows)-1])
 			act = chatRow(b.rows[len(b.rows)-1])
@@ -127,18 +126,18 @@ func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				layout.Rigid(
 					func(gtx C) D {
 						return layout.UniformInset(offset).Layout(gtx,
-							material.Label(th, unit.Sp(14), r.At.String()).Layout,
+							material.Label(th, unit.Sp(12), r.At.String()).Layout,
 						)
 					},
 				),
 				layout.Flexed(0.1,
 					func(gtx C) D {
-						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(18), strings.ToUpper(r.Mode)).Layout)
+						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), strings.ToUpper(r.Mode)).Layout)
 					},
 				),
 				layout.Flexed(0.15,
 					func(gtx C) D {
-						playerInfo := material.Label(th, unit.Sp(18), r.Sender)
+						playerInfo := material.Label(th, unit.Sp(14), r.Sender)
 						playerInfo.Color = color.NRGBA{0, 0, 0, 255} // black
 						if r.Sender == playerName {
 							playerInfo.Color = color.NRGBA{0, 255, 0, 255} // green
@@ -148,7 +147,7 @@ func (r chatRow) rowDisplay(gtx C, playerName string, th *material.Theme) D {
 				),
 				layout.Flexed(0.75,
 					func(gtx C) D {
-						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(18), r.Msg).Layout)
+						return layout.UniformInset(offset).Layout(gtx, material.Label(th, unit.Sp(14), r.Msg).Layout)
 					},
 				),
 			)

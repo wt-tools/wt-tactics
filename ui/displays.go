@@ -43,7 +43,7 @@ func (b *basicDisplay) Display(gtx C, visible bool) func(C) D {
 		}.Layout(gtx,
 			layout.Rigid(
 				func(gtx layout.Context) layout.Dimensions {
-					lbl := material.Label(b.theme, unit.Sp(30), b.title)
+					lbl := material.Label(b.theme, unit.Sp(26), b.title)
 					lbl.Color = b.color
 					lbl.Alignment = text.Middle
 					return lbl.Layout(gtx)
